@@ -1,6 +1,6 @@
 import calendar
-from datetime import datetime
-from typing import List
+from datetime import date, datetime
+from typing import List, Optional
 
 import humanize
 from croniter import croniter
@@ -22,20 +22,31 @@ SECTIONS = [
 class Reminder(BaseModel):
     id: str
     title: str
-    description: str
-    schedule: str
+    description: Optional[str]
+    schedule: Optional[str]
+    date: Optional[date]
     contacts: List[str]
 
     @validator("schedule")
-    def schedule_must_be_valid_crontab(cls, val):
-        if not croniter.is_valid(val):
+    def schedule_must_be_valid_crontab(cls, schedule):
+        if not croniter.is_valid(schedule):
             raise ValidationError("invalid crontab expression")
-        return val
+        return schedule
+
+    @validator("date")
+    def check_a_or_b(cls, dt, values):
+        if "schedule" in values or dt:
+            return dt
+        else:
+            raise ValueError("either a schedule or a date is required")
 
     def get_next(self, tz=None, ret_type=datetime):
-        tz = tz or get_localzone()
-        local_date = datetime.now(tz)
-        return croniter(self.schedule, local_date).get_next(datetime)
+        if not self.date:
+            tz = tz or get_localzone()
+            local_date = datetime.now(tz)
+            return croniter(self.schedule, local_date).get_next(datetime)
+        else:
+            return self.date
 
     @property
     def time_until_next(self, tz=None):
@@ -161,12 +172,7 @@ class RemindersService:
                     message_body += title + "\n"
                     for reminder in reminders[key]:
                         message_body += "\n"
-                        message_body += (
-                            reminder.description.format(
-                                when=humanize.naturaltime(reminder.time_until_next)
-                            )
-                            + "\n"
-                        )
+                        message_body += reminder.title
             message = self.twilio_client.send(
                 to=contact.number, body=message_body, dry_run=dry_run
             )
