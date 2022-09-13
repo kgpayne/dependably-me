@@ -1,0 +1,21 @@
+- id: kens-birthday
+  title: Ken Paynes' Birthday
+  description: Its Kens Birthday {when}.
+  schedule: "0 0 14 11 *"
+  contacts:
+  - ken-payne
+  - charlie-payne
+
+- id: this-week
+  title: Test Reminder, This Week
+  description: This week event test.
+  schedule: "0 4 * * 7"
+  contacts:
+  - ken-payne
+
+- id: this-month
+  title: Test Reminder, This Month
+  description: This month event test.
+  schedule: "0 0 29 * *"
+  contacts:
+  - ken-payne
