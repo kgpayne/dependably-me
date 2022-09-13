@@ -1,0 +1,6 @@
+- id: barbossas-birthday
+  title: Captain Barbossas' Birthday
+  description: Send him the monkey.
+  schedule: "0 0 1 1 *"
+  contacts:
+  - jack-sparrow
